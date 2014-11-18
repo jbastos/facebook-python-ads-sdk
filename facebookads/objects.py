@@ -43,6 +43,7 @@ import collections
 import json
 import six
 import base64
+import time
 
 
 class EdgeIterator(object):
@@ -131,11 +132,35 @@ class EdgeIterator(object):
         if 'summary' not in self._params:
             self._params['summary'] = True
 
+        #HACK
+        async = 'async' in self._params and self._params['async']=='true'
+        meth = FacebookAdsApi.HTTP_METHOD_POST if async else FacebookAdsApi.HTTP_METHOD_GET
+
         response = self._source_object.get_api_assured().call(
-            'GET',
+            meth,
             self._path,
             params=self._params,
         ).json()
+
+        if async:
+            self._params.pop('async')
+            async_id = response['id']
+            while True:
+                response_async = self._source_object.get_api_assured().call(
+                    FacebookAdsApi.HTTP_METHOD_GET,
+                    (str(async_id),),
+                ).json()
+                if 'async_status' in response_async and response_async['async_status']==u'Job Completed' and response_async['async_percent_completion']==100:
+                    time.sleep(2)
+                    break
+                else:
+                    time.sleep(2)
+            response = self._source_object.get_api_assured().call(
+                FacebookAdsApi.HTTP_METHOD_GET,
+                self._path,
+                params={'report_run_id':str(async_id)},
+            ).json()
+
 
         if 'paging' in response and 'next' in response['paging']:
             self._path = response['paging']['next']
