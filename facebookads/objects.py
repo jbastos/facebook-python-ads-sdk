@@ -1550,7 +1550,7 @@ class AdVideo(AbstractCrudObject):
         self._set_data(response)
         return response
 
-    def waitUntilEncodingReady(self):
+    def waitUntilEncodingReady(self, interval=30, timeout=600):
         if 'id' not in self:
             raise FacebookError(
                 'Invalid Video ID',
@@ -1558,6 +1558,8 @@ class AdVideo(AbstractCrudObject):
         VideoEncodingStatusChecker.waitUntilReady(
             self.get_api_assured(),
             self['id'],
+            interval,
+            timeout,
         )
 
 
