@@ -1339,7 +1339,7 @@ class AdSet(CanValidate, HasStatus, CanArchive, AbstractCrudObject):
         )
 
 
-class AdGroup(HasStatus, HasObjective, CanArchive, AbstractCrudObject):
+class AdGroup(HasStatus, CanArchive, AbstractCrudObject):
 
     class Field(HasBidInfo, object):
         account_id = 'account_id'
